@@ -128,7 +128,6 @@
         .page-content {
             width: 100%;
             height: 100%;
-            padding: 3rem;
             overflow-y: auto;
             position: relative;
             background: linear-gradient(to bottom, #ffffff 0%, #fafafa 100%);
@@ -150,7 +149,8 @@
         .page img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
+            background-color: white;
         }
 
         .page-number {
@@ -291,7 +291,7 @@
             }
 
             .book-wrapper {
-                max-width: 95%;
+                max-width: 100%;
             }
 
             .page-content {
@@ -307,6 +307,11 @@
                 width: 40px;
                 height: 40px;
                 font-size: 1.2rem;
+            }
+             .flipbook-container:fullscreen .nav-btn {
+                width: 56px;
+                height: 56px;
+                font-size: 1.6rem;
             }
         }
 
@@ -618,16 +623,23 @@ if (
             if (e.key === 'ArrowLeft') previousPage();
         });
 
-        // Fullscreen functionality
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
-                document.getElementById('fullscreenIcon').textContent = '⛶';
-            } else {
-                document.exitFullscreen();
-                document.getElementById('fullscreenIcon').textContent = '⛶';
-            }
+function toggleFullscreen() {
+    const flipbook = document.querySelector('.flipbook-container');
+
+    if (!document.fullscreenElement) {
+        if (flipbook.requestFullscreen) {
+            flipbook.requestFullscreen();
+        } else if (flipbook.webkitRequestFullscreen) {
+            flipbook.webkitRequestFullscreen(); // iOS Safari
         }
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        }
+    }
+}
 
         // Click on pages to navigate
         document.addEventListener('click', function(e) {
