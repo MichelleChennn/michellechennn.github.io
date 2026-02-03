@@ -442,7 +442,6 @@
         rightPage.className = 'page right';
         rightPage.innerHTML = `
             <img src="${pages[0]}" alt="Cover">
-            <div class="page-number">Cover</div>
         `;
         book.appendChild(rightPage);
 
@@ -458,7 +457,6 @@
         leftPage.className = 'page left';
         leftPage.innerHTML = `
             <img src="${pages[pages.length - 1]}" alt="Back Cover">
-            <div class="page-number">${pages.length}</div>
         `;
         book.appendChild(leftPage);
 
@@ -477,7 +475,6 @@ if (
     leftPage.className = 'page left';
     leftPage.innerHTML = `
         <img src="${pages[currentPageIndex]}">
-        <div class="page-number">${pages.length}</div>
     `;
     book.appendChild(leftPage);
 
@@ -500,7 +497,6 @@ if (
         <div class="page-face back">
             <img src="${pages[leftPageIndex + 1] || pages[leftPageIndex]}">
         </div>
-            <div class="page-number">${leftPageIndex + 1}</div>
         `;
         book.appendChild(leftPage);
     }
@@ -515,7 +511,6 @@ if (
             <div class="page-face back">
     <img src="${pages[leftPageIndex - 1] || pages[leftPageIndex]}">
 </div>
-            <div class="page-number">${rightPageIndex + 1}</div>
         `;
         book.appendChild(rightPage);
     }
