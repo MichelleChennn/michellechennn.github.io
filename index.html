@@ -285,35 +285,17 @@
             margin-bottom: 2rem;
         }
 
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2.5rem;
-            }
-
-            .book-wrapper {
-                max-width: 100%;
-            }
-
-            .page-content {
-                padding: 1.5rem;
-            }
-
-            .controls {
-                bottom: -70px;
-                gap: 1rem;
-            }
-
-            .nav-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 1.2rem;
-            }
-             .flipbook-container:fullscreen .nav-btn {
-            width: 56px;
-            height: 56px;
-            font-size: 1.6rem;
-        }
-        }
+@media (max-width: 768px) {
+    .flipbook-container {
+        display: flex;
+        justify-content: center; /* horizontal centering */
+        align-items: center;     /* vertical centering */
+        padding: 0.5rem;         /* optional, small padding */
+        height: calc(100vh - 70px); /* subtract header height if needed */
+        box-sizing: border-box;
+        margin-bottom: 20rem;
+    }
+}
 
         /* Flip states */
         .page.flip-forward {
