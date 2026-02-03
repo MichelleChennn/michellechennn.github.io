@@ -455,52 +455,18 @@
 
     <script>
         
-        
-        const EMBEDDED_PDF_URL = 'portf.pdf';
-        // ============================================
-        // END OF CONFIGURATION
-        // ============================================
         let bookState = 'front-cover'; 
         // 'front-cover' | 'open' | 'back-cover'
-        let pages = [];
+        let pages = Array.from({ length: 41 }, (_, i) =>
+          `page-${String(i).padStart(3, "0")}.jpg`
+        );
+
         let currentPageIndex = 0;
 
-        // Initialize with embedded content or localStorage
-        async function initializePortfolio() {
-            // First check for embedded PDF
-            if (EMBEDDED_PDF) {
-                console.log('Loading embedded PDF...');
-                await loadEmbeddedPDF(EMBEDDED_PDF);
-            }
-            else {
-                pages = JSON.parse(localStorage.getItem('flipbookPages')) || [];
-            }
+        // Initialize with embedded content
+        function initializePortfolio() {
             currentPageIndex = 0;
             bookState = pages.length > 0 ? 'front-cover' : 'open';
-            renderBook();
-        }
-
-        async function loadPDFByURL(url) {
-            const pdf = await pdfjsLib.getDocument(url).promise;
-            const numPages = pdf.numPages;
-
-            pages = [];
-
-            for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-                const page = await pdf.getPage(pageNum);
-                const viewport = page.getViewport({ scale: 1.5 });
-
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-
-                await page.render({ canvasContext: ctx, viewport }).promise;
-                pages.push(canvas.toDataURL('image/jpeg', 0.85));
-            }
-
-            bookState = 'front-cover';
-            currentPageIndex = 0;
             renderBook();
         }
 
@@ -553,7 +519,7 @@
                 <img src="${pages[leftPageIndex]}">
             </div>
             <div class="page-face back">
-                <img src="${pages[leftPageIndex - 1] || pages[leftPageIndex]}">
+                <img src="${pages[leftPageIndex + 1] || pages[leftPageIndex]}">
             </div>
             <div class="page-number">${leftPageIndex + 1}</div>
         `;
@@ -667,67 +633,6 @@
             renderBook();
         }
 
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const files = Array.from(e.target.files);
-            
-            files.forEach(file => {
-                if (file.type === 'application/pdf') {
-                    processPDF(file);
-                } else if (file.type.startsWith('image/')) {
-                    processImage(file);
-                }
-            });
-
-            e.target.value = '';
-        });
-
-        function processImage(file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                pages.push(event.target.result);
-                localStorage.setItem('flipbookPages', JSON.stringify(pages));
-                if (pages.length === 1) {
-                    currentPageIndex = 0;
-                }
-                renderBook();
-            };
-            reader.readAsDataURL(file);
-        }
-
-        async function processPDF(file) {
-    try {
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-        const numPages = pdf.numPages;
-
-        console.log(`Processing PDF with ${numPages} pages...`);
-
-        for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-            const page = await pdf.getPage(pageNum);
-            const viewport = page.getViewport({ scale: 1.5 }); // slightly smaller, much lighter
-
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-
-            await page.render({ canvasContext: context, viewport }).promise;
-
-            pages.push(canvas.toDataURL('image/jpeg', 0.85));
-
-            if (pages.length === 1) {
-                currentPageIndex = 0;
-            }
-
-            renderBook(); // still updates progressively
-        }
-
-        console.log('PDF processing complete!');
-    } catch (error) {
-        console.error('Error processing PDF:', error);
-        alert('Error processing PDF. Please try again or use images instead.');
-    }
-}
 
 
         // Keyboard navigation
