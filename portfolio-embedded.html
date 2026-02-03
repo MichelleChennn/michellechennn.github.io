@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Portfolio - Interactive Resume</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    <style>
+        :root {
+            --bg: #f8f6f1;
+            --text: #2a2a2a;
+            --accent: #8b4513;
+            --accent-light: #a0663f;
+            --shadow: rgba(0, 0, 0, 0.15);
+            --paper: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #f8f6f1 0%, #e8e4dc 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            padding: 3rem 2rem 2rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.5rem;
+            font-weight: 300;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.02em;
+        }
+
+        .tagline {
+            font-size: 1rem;
+            color: #666;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+
+        .flipbook-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            perspective: 2000px;
+            animation: fadeIn 1s ease-out 0.3s both;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .book-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            aspect-ratio: 16 / 10;
+            filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.25));
+        }
+
+        .book {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .page {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            background: var(--paper);
+            overflow: hidden;
+            backface-visibility: hidden;
+            transform-style: preserve-3d;
+            transition: transform 0.8s ease;
+        }
+
+        .page.left {
+            left: 0;
+            transform-origin: right center; /* ← FIX */
+        }
+
+        .page.right {
+            right: 0;
+            transform-origin: left center; /* ← FIX */
+        }
+
+        .page-content {
+            width: 100%;
+            height: 100%;
+            padding: 3rem;
+            overflow-y: auto;
+            position: relative;
+            background: linear-gradient(to bottom, #ffffff 0%, #fafafa 100%);
+        }
+
+        .page-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .page-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .page-content::-webkit-scrollbar-thumb {
+            background: var(--accent-light);
+            border-radius: 3px;
+        }
+
+        .page img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .page-number {
+            position: absolute;
+            bottom: 1.5rem;
+            font-size: 0.75rem;
+            color: #999;
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        .page.left .page-number {
+            left: 1.5rem;
+        }
+
+        .page.right .page-number {
+            right: 1.5rem;
+        }
+
+        .flip-overlay {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            right: 0;
+            background: rgba(0, 0, 0, 0.05);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.8s;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            animation: fadeIn 1.2s ease-out 0.6s both;
+        }
+
+        .nav-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-family: serif;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: var(--accent-light);
+            transform: scale(1.1);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .page-indicator {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            color: var(--accent);
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .upload-section {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            animation: fadeIn 1.5s ease-out 1s both;
+        }
+
+        .upload-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 400;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+            font-family: 'Montserrat', sans-serif;
+            box-shadow: 0 4px 15px rgba(139, 69, 19, 0.2);
+        }
+
+        .upload-btn:hover {
+            background: var(--accent-light);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 69, 19, 0.3);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .spine {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: linear-gradient(to right, #d4d4d4 0%, #e8e8e8 50%, #d4d4d4 100%);
+            transform: translateX(-50%);
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+            z-index: -1;
+        }
+
+        .fullscreen-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            animation: fadeIn 1.5s ease-out 1.2s both;
+        }
+
+        .fullscreen-btn:hover {
+            background: var(--accent-light);
+            transform: scale(1.1);
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .empty-state h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+
+        .empty-state p {
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .book-wrapper {
+                max-width: 95%;
+            }
+
+            .page-content {
+                padding: 1.5rem;
+            }
+
+            .controls {
+                bottom: -70px;
+                gap: 1rem;
+            }
+
+            .nav-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Flip states */
+        .page.flip-forward {
+            transform: rotateY(-180deg);
+        }
+
+        .page.flip-backward {
+            transform: rotateY(180deg);
+        }
+
+        /* Page shadows for depth */
+        .page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to left, rgba(0, 0, 0, 0.05) 0%, transparent 10%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .page.right::before {
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.05) 0%, transparent 10%);
+        }
+
+        .page:hover::before {
+            opacity: 1;
+        }
+        /* ===== REAL INWARD PAGE FLIP ===== */
+
+        .page {
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Spine hinges */
+        .page.left {
+            transform-origin: right center;
+        }
+
+        .page.right {
+            transform-origin: left center;
+        }
+
+        /* Page faces */
+        .page-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+        }
+
+        .page-face img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Back of the paper */
+        .page-face.back {
+            transform: rotateY(180deg);
+        }
+
+        /* Flip directions */
+        .page.flip-forward {
+            transform: rotateY(-180deg);
+        }
+
+        .page.flip-backward {
+            transform: rotateY(180deg);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="upload-section">
+        <input type="file" id="fileInput" accept="image/*,.pdf" multiple>
+        <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+            + Add PDF/Images
+        </button>
+    </div>
+
+    <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
+        <span id="fullscreenIcon">⛶</span>
+    </button>
+
+    <header>
+        <h1>My Portfolio</h1>
+        <p class="tagline">Interactive Resume & Work</p>
+    </header>
+
+    <div class="flipbook-container">
+        <div class="book-wrapper">
+            <div class="spine"></div>
+            <div class="book" id="book">
+                <!-- Pages will be generated here -->
+            </div>
+            <div class="flip-overlay"></div>
+            <div class="controls">
+                <button class="nav-btn" id="prevBtn" onclick="previousPage()">‹</button>
+                <div class="page-indicator">
+                    <span id="currentPage">0</span> / <span id="totalPages">0</span>
+                </div>
+                <button class="nav-btn" id="nextBtn" onclick="nextPage()">›</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        
+        
+        const EMBEDDED_PDF_URL = 'portf.pdf';
+        // ============================================
+        // END OF CONFIGURATION
+        // ============================================
+        let bookState = 'front-cover'; 
+        // 'front-cover' | 'open' | 'back-cover'
+        let pages = [];
+        let currentPageIndex = 0;
+
+        // Initialize with embedded content or localStorage
+        async function initializePortfolio() {
+            // First check for embedded PDF
+            if (EMBEDDED_PDF) {
+                console.log('Loading embedded PDF...');
+                await loadEmbeddedPDF(EMBEDDED_PDF);
+            }
+            else {
+                pages = JSON.parse(localStorage.getItem('flipbookPages')) || [];
+            }
+            currentPageIndex = 0;
+            bookState = pages.length > 0 ? 'front-cover' : 'open';
+            renderBook();
+        }
+
+        async function loadPDFByURL(url) {
+            const pdf = await pdfjsLib.getDocument(url).promise;
+            const numPages = pdf.numPages;
+
+            pages = [];
+
+            for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const viewport = page.getViewport({ scale: 1.5 });
+
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                await page.render({ canvasContext: ctx, viewport }).promise;
+                pages.push(canvas.toDataURL('image/jpeg', 0.85));
+            }
+
+            bookState = 'front-cover';
+            currentPageIndex = 0;
+            renderBook();
+        }
+
+        function renderBook() {
+    const book = document.getElementById('book');
+    const totalPagesSpan = document.getElementById('totalPages');
+    book.innerHTML = '';
+
+    // ===== FRONT COVER (closed) =====
+    if (bookState === 'front-cover') {
+        const rightPage = document.createElement('div');
+        rightPage.className = 'page right';
+        rightPage.innerHTML = `
+            <img src="${pages[0]}" alt="Cover">
+            <div class="page-number">Cover</div>
+        `;
+        book.appendChild(rightPage);
+
+        totalPagesSpan.textContent = pages.length;
+        document.getElementById('currentPage').textContent = 'Cover';
+        updateNavigation();
+        return;
+    }
+
+    // ===== BACK COVER (closed) =====
+    if (bookState === 'back-cover') {
+        const leftPage = document.createElement('div');
+        leftPage.className = 'page left';
+        leftPage.innerHTML = `
+            <img src="${pages[pages.length - 1]}" alt="Back Cover">
+            <div class="page-number">${pages.length}</div>
+        `;
+        book.appendChild(leftPage);
+
+        totalPagesSpan.textContent = pages.length;
+        document.getElementById('currentPage').textContent = pages.length;
+        updateNavigation();
+        return;
+    }
+
+    // ===== OPEN BOOK =====
+    const leftPageIndex = currentPageIndex;
+    const rightPageIndex = currentPageIndex + 1;
+
+    if (leftPageIndex < pages.length) {
+        const leftPage = document.createElement('div');
+        leftPage.className = 'page left';
+        leftPage.innerHTML = `
+            <div class="page-face front">
+                <img src="${pages[leftPageIndex]}">
+            </div>
+            <div class="page-face back">
+                <img src="${pages[leftPageIndex - 1] || pages[leftPageIndex]}">
+            </div>
+            <div class="page-number">${leftPageIndex + 1}</div>
+        `;
+        book.appendChild(leftPage);
+    }
+
+    if (rightPageIndex < pages.length) {
+        const rightPage = document.createElement('div');
+        rightPage.className = 'page right';
+        rightPage.innerHTML = `
+            <div class="page-face front">
+                <img src="${pages[rightPageIndex]}">
+            </div>
+            <div class="page-face back">
+                <img src="${pages[rightPageIndex + 1] || pages[rightPageIndex]}">
+            </div>
+            <div class="page-number">${rightPageIndex + 1}</div>
+        `;
+        book.appendChild(rightPage);
+    }
+
+    totalPagesSpan.textContent = pages.length;
+    document.getElementById('currentPage').textContent = currentPageIndex + 1;
+    updateNavigation();
+}
+        let isFlipping = false;
+        function flipPage(direction) {
+            if (isFlipping) return;
+            isFlipping = true;
+
+            let flippingPage =
+                direction === 'next'
+                    ? document.querySelector('.page.right')
+                    : document.querySelector('.page.left');
+
+            if (!flippingPage) {
+                isFlipping = false;
+                return;
+            }
+
+            flippingPage.style.zIndex = 10;
+
+            if (direction === 'next') {
+                flippingPage.classList.add('flip-forward');
+            } else {
+                flippingPage.classList.add('flip-backward');
+            }
+
+            setTimeout(() => {
+                if (direction === 'next') {
+                    currentPageIndex += 2;
+                } else {
+                    currentPageIndex -= 2;
+                }
+
+                isFlipping = false;
+                renderBook();
+            }, 800); // MUST match CSS transition
+        }
+
+
+        function updateCurrentPage() {
+            const currentPageSpan = document.getElementById('currentPage');
+            currentPageSpan.textContent = currentPageIndex + 1;
+        }
+
+        function updateNavigation() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            prevBtn.disabled = currentPageIndex <= 0;
+            nextBtn.disabled = currentPageIndex >= pages.length - 2 || pages.length === 0;
+        }
+
+        function nextPage() {
+            // Open the book from cover
+            if (bookState === 'front-cover') {
+                bookState = 'open';
+                currentPageIndex = 1; // start after cover
+                renderBook();
+                return;
+            }
+
+            // Normal flipping
+            if (currentPageIndex < pages.length - 2) {
+                flipPage('next');
+                return;
+            }
+
+            // Close the book on last page
+            bookState = 'back-cover';
+            renderBook();
+        }
+
+        function previousPage() {
+            if (bookState === 'back-cover') {
+                bookState = 'open';
+                currentPageIndex = pages.length - 3;
+                if (currentPageIndex < 1) currentPageIndex = 1;
+                renderBook();
+                return;
+            }
+            // Normal flipping
+            if (currentPageIndex > 1) {
+                flipPage('prev');
+                return;
+            }
+
+            // Close back to front cover
+            bookState = 'front-cover';
+            renderBook();
+        }
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            
+            files.forEach(file => {
+                if (file.type === 'application/pdf') {
+                    processPDF(file);
+                } else if (file.type.startsWith('image/')) {
+                    processImage(file);
+                }
+            });
+
+            e.target.value = '';
+        });
+
+        function processImage(file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                pages.push(event.target.result);
+                localStorage.setItem('flipbookPages', JSON.stringify(pages));
+                if (pages.length === 1) {
+                    currentPageIndex = 0;
+                }
+                renderBook();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function processPDF(file) {
+    try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const numPages = pdf.numPages;
+
+        console.log(`Processing PDF with ${numPages} pages...`);
+
+        for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const viewport = page.getViewport({ scale: 1.5 }); // slightly smaller, much lighter
+
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+
+            await page.render({ canvasContext: context, viewport }).promise;
+
+            pages.push(canvas.toDataURL('image/jpeg', 0.85));
+
+            if (pages.length === 1) {
+                currentPageIndex = 0;
+            }
+
+            renderBook(); // still updates progressively
+        }
+
+        console.log('PDF processing complete!');
+    } catch (error) {
+        console.error('Error processing PDF:', error);
+        alert('Error processing PDF. Please try again or use images instead.');
+    }
+}
+
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight') nextPage();
+            if (e.key === 'ArrowLeft') previousPage();
+        });
+
+        // Fullscreen functionality
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+                document.getElementById('fullscreenIcon').textContent = '⛶';
+            } else {
+                document.exitFullscreen();
+                document.getElementById('fullscreenIcon').textContent = '⛶';
+            }
+        }
+
+        // Click on pages to navigate
+        document.addEventListener('click', function(e) {
+            const book = document.getElementById('book');
+            if (book.contains(e.target)) {
+                const rect = book.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const midPoint = rect.width / 2;
+
+                if (clickX > midPoint) {
+                    nextPage();
+                } else {
+                    previousPage();
+                }
+            }
+        });
+
+        // Initialize on load
+        initializePortfolio();
+    </script>
+</body>
+</html>
