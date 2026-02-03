@@ -309,10 +309,10 @@
                 font-size: 1.2rem;
             }
              .flipbook-container:fullscreen .nav-btn {
-                width: 56px;
-                height: 56px;
-                font-size: 1.6rem;
-            }
+            width: 56px;
+            height: 56px;
+            font-size: 1.6rem;
+        }
         }
 
         /* Flip states */
@@ -388,28 +388,6 @@
         .page.flip-backward {
             transform: rotateY(180deg);
         }
-
-        /* Mobile fullscreen simulation */
-.flipbook-container.fullscreen {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    z-index: 9999 !important;
-    background: var(--bg);
-    padding: 0 !important;
-    margin: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-
-.flipbook-container.fullscreen .book-wrapper {
-    width: 95% !important;
-    height: 95% !important;
-    max-width: none !important;
-}
 
     </style>
 </head>
@@ -648,27 +626,20 @@ if (
 function toggleFullscreen() {
     const flipbook = document.querySelector('.flipbook-container');
 
-    if (window.innerWidth > 768) {
-        // DESKTOP: Use actual Fullscreen API
-        if (!document.fullscreenElement) {
-            if (flipbook.requestFullscreen) {
-                flipbook.requestFullscreen();
-            } else if (flipbook.webkitRequestFullscreen) {
-                flipbook.webkitRequestFullscreen(); // Safari
-            }
-        } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            }
+    if (!document.fullscreenElement) {
+        if (flipbook.requestFullscreen) {
+            flipbook.requestFullscreen();
+        } else if (flipbook.webkitRequestFullscreen) {
+            flipbook.webkitRequestFullscreen(); // iOS Safari
         }
     } else {
-        // MOBILE: Use CSS class toggle
-        flipbook.classList.toggle('fullscreen');
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        }
     }
 }
-
 
         // Click on pages to navigate
         document.addEventListener('click', function(e) {
