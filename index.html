@@ -225,39 +225,6 @@
             text-align: center;
         }
 
-        .upload-section {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            animation: fadeIn 1.5s ease-out 1s both;
-        }
-
-        .upload-btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 400;
-            letter-spacing: 0.05em;
-            transition: all 0.3s ease;
-            font-family: 'Montserrat', sans-serif;
-            box-shadow: 0 4px 15px rgba(139, 69, 19, 0.2);
-        }
-
-        .upload-btn:hover {
-            background: var(--accent-light);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(139, 69, 19, 0.3);
-        }
-
-        input[type="file"] {
-            display: none;
-        }
-
         .spine {
             position: absolute;
             left: 50%;
@@ -420,12 +387,6 @@
     </style>
 </head>
 <body>
-    <div class="upload-section">
-        <input type="file" id="fileInput" accept="image/*,.pdf" multiple>
-        <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
-            + Add PDF/Images
-        </button>
-    </div>
 
     <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
         <span id="fullscreenIcon">⛶</span>
@@ -457,7 +418,7 @@
         
         let bookState = 'front-cover'; 
         // 'front-cover' | 'open' | 'back-cover'
-        let pages = Array.from({ length: 41 }, (_, i) =>
+        let pages = Array.from({ length: 42 }, (_, i) =>
           `page-${String(i).padStart(3, "0")}.jpg`
         );
 
@@ -507,6 +468,24 @@
         return;
     }
 
+    // ===== LAST SINGLE PAGE (NO BACK FACE) =====
+if (
+    bookState === 'open' &&
+    currentPageIndex === pages.length - 1
+) {
+    const leftPage = document.createElement('div');
+    leftPage.className = 'page left';
+    leftPage.innerHTML = `
+        <img src="${pages[currentPageIndex]}">
+        <div class="page-number">${pages.length}</div>
+    `;
+    book.appendChild(leftPage);
+
+    totalPagesSpan.textContent = pages.length;
+    document.getElementById('currentPage').textContent = pages.length;
+    updateNavigation();
+    return;
+}
     // ===== OPEN BOOK =====
     const leftPageIndex = currentPageIndex;
     const rightPageIndex = currentPageIndex + 1;
@@ -518,9 +497,9 @@
             <div class="page-face front">
                 <img src="${pages[leftPageIndex]}">
             </div>
-            <div class="page-face back">
-                <img src="${pages[leftPageIndex + 1] || pages[leftPageIndex]}">
-            </div>
+        <div class="page-face back">
+            <img src="${pages[leftPageIndex + 1] || pages[leftPageIndex]}">
+        </div>
             <div class="page-number">${leftPageIndex + 1}</div>
         `;
         book.appendChild(leftPage);
@@ -534,8 +513,8 @@
                 <img src="${pages[rightPageIndex]}">
             </div>
             <div class="page-face back">
-                <img src="${pages[rightPageIndex + 1] || pages[rightPageIndex]}">
-            </div>
+    <img src="${pages[leftPageIndex - 1] || pages[leftPageIndex]}">
+</div>
             <div class="page-number">${rightPageIndex + 1}</div>
         `;
         book.appendChild(rightPage);
@@ -590,48 +569,51 @@
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
 
-            prevBtn.disabled = currentPageIndex <= 0;
-            nextBtn.disabled = currentPageIndex >= pages.length - 2 || pages.length === 0;
+            prevBtn.disabled = (bookState === 'front-cover');
+            nextBtn.disabled = (bookState === 'back-cover');
         }
 
         function nextPage() {
-            // Open the book from cover
-            if (bookState === 'front-cover') {
-                bookState = 'open';
-                currentPageIndex = 1; // start after cover
-                renderBook();
-                return;
-            }
+    // Open the book from cover
+    if (bookState === 'front-cover') {
+        bookState = 'open';
+        currentPageIndex = 1;
+        renderBook();
+        return;
+    }
 
-            // Normal flipping
-            if (currentPageIndex < pages.length - 2) {
-                flipPage('next');
-                return;
-            }
+    // If next spread exists
+    if (currentPageIndex + 2 < pages.length) {
+        flipPage('next');
+        return;
+    }
 
-            // Close the book on last page
-            bookState = 'back-cover';
-            renderBook();
-        }
+    // If we're on the LAST interior page, go to back cover
+    if (currentPageIndex + 1 === pages.length - 1) {
+        bookState = 'back-cover';
+        renderBook();
+        return;
+    }
+}
+
 
         function previousPage() {
-            if (bookState === 'back-cover') {
-                bookState = 'open';
-                currentPageIndex = pages.length - 3;
-                if (currentPageIndex < 1) currentPageIndex = 1;
-                renderBook();
-                return;
-            }
-            // Normal flipping
-            if (currentPageIndex > 1) {
-                flipPage('prev');
-                return;
-            }
+    if (bookState === 'back-cover') {
+        bookState = 'open';
+        currentPageIndex = pages.length - 2;
+        renderBook();
+        return;
+    }
 
-            // Close back to front cover
-            bookState = 'front-cover';
-            renderBook();
-        }
+    if (currentPageIndex > 1) {
+        flipPage('prev');
+        return;
+    }
+
+    bookState = 'front-cover';
+    renderBook();
+}
+
 
 
 
