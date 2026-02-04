@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Portfolio - Interactive Resume</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -13,8 +14,8 @@
         :root {
             --bg: #f8f6f1;
             --text: #2a2a2a;
-            --accent: #8b4513;
-            --accent-light: #a0663f;
+            --accent: #000;
+            --accent-light: #222;
             --shadow: rgba(0, 0, 0, 0.15);
             --paper: #ffffff;
         }
@@ -27,7 +28,7 @@
 
         body {
             font-family: 'Montserrat', sans-serif;
-            background: linear-gradient(135deg, #f8f6f1 0%, #e8e4dc 100%);
+            background: linear-gradient(135deg, #f4f5f7 0%, #e1e3e8 100%);
             color: var(--text);
             min-height: 100vh;
             display: flex;
@@ -39,6 +40,10 @@
             text-align: center;
             padding: 3rem 2rem 2rem;
             animation: fadeInDown 0.8s ease-out;
+        }
+        header h1,
+        header .tagline {
+        font-family: 'Carlito', Calibri, 'Segoe UI', Arial, sans-serif;
         }
 
         @keyframes fadeInDown {
@@ -239,13 +244,13 @@
 
         .fullscreen-btn {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 3rem;
+            right: 2rem;
             background: var(--accent);
             color: white;
             border: none;
-            width: 45px;
-            height: 45px;
+            width: 3rem;
+            height: 3rem;
             border-radius: 50%;
             cursor: pointer;
             font-size: 1.2rem;
@@ -380,8 +385,8 @@
     </button>
 
     <header>
-        <h1>Michelle's Corner</h1>
-        <p class="tagline">Interactive Resume & Work</p>
+        <h1>MICHELLE CHEN</h1>
+        <p class="tagline">INTERIOR ARCHITECTURE PORTFOLIO</p>
     </header>
 
     <div class="flipbook-container">
